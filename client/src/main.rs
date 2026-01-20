@@ -103,7 +103,7 @@ fn draw_3d_view(me: &Player, players: &[Player], level: u8) {
         let t = (i as f32 / (rays as f32 - 1.0)) * 2.0 - 1.0;
         let ang = me.ang + t * (fov * 0.5);
         let dist = raycast(level, me.pos, ang);
-        let wall_h = (h / (dist.max(0.001))) * 0.08;
+        let wall_h = (h / dist.max(0.001)) * 0.5;
         let x = i as f32;
         let y = (h - wall_h) * 0.5;
         draw_rectangle(x, y, 1.0, wall_h, DARKGRAY);

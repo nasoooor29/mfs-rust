@@ -34,7 +34,7 @@ fn main() -> std::io::Result<()> {
                                 Player {
                                     id,
                                     name,
-                                    pos: Vec2 { x: 2.5, y: 2.5 },
+                                    pos: Vec2 { x: 1.5, y: 1.5 },
                                     ang: 0.0,
                                     level,
                                     alive: true,
