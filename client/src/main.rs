@@ -1,5 +1,5 @@
+use common::{is_wall, ClientId, Player, Vec2 as CommonVec2, C2S, LEVELS, MAP_H, MAP_W, S2C};
 use macroquad::prelude::*;
-use maze_wars::common::*;
 use postcard::{from_bytes, to_stdvec};
 use std::{
     io::{self, Write},
@@ -124,7 +124,7 @@ fn draw_3d_view(me: &Player, players: &[Player], level: u8) {
     }
 }
 
-fn raycast(level: u8, pos: Vec2, ang: f32) -> f32 {
+fn raycast(level: u8, pos: CommonVec2, ang: f32) -> f32 {
     // DDA-ish “cheap” stepping: minimal code, good enough for Maze Wars visuals
     let (cs, sn) = (ang.cos(), ang.sin());
     let mut t = 0.0;

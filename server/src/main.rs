@@ -4,7 +4,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use maze_wars::common::*;
+use common::*;
 use postcard::{from_bytes, to_stdvec};
 
 fn main() -> std::io::Result<()> {
@@ -14,7 +14,7 @@ fn main() -> std::io::Result<()> {
     let mut next_id: ClientId = 1;
     let mut clients: HashMap<std::net::SocketAddr, ClientId> = HashMap::new();
     let mut players: HashMap<ClientId, Player> = HashMap::new();
-    let mut level: u8 = 0;
+    let level: u8 = 0;
 
     let mut buf = [0u8; 1400];
     let mut last_tick = Instant::now();
