@@ -31,6 +31,7 @@ pub enum C2S {
         turn: f32,
         shoot: bool,
     },
+    GoodBye,
 }
 
 #[derive(Serialize, Deserialize)]

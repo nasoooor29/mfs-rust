@@ -22,6 +22,11 @@ fn to_name16(s: &str) -> [u8; 16] {
     out[..n].copy_from_slice(&b[..n]);
     out
 }
+fn send_c2s(sock: &UdpSocket, msg: &C2S) {
+    if let Ok(pkt) = to_stdvec(msg) {
+        let _ = sock.send(&pkt);
+    }
+}
 
 #[macroquad::main("Maze Wars")]
 async fn main() {
@@ -33,8 +38,7 @@ async fn main() {
     sock.set_nonblocking(true).unwrap();
     sock.connect(server).unwrap();
 
-    sock.send(&to_stdvec(&C2S::Hello { name }).unwrap())
-        .unwrap();
+    send_c2s(&sock, &C2S::Hello { name });
 
     let mut my_id: ClientId = 0;
     let mut players: Vec<Player> = vec![];
@@ -59,6 +63,11 @@ async fn main() {
                 }
             }
         }
+        if is_key_pressed(KeyCode::Escape) {
+            send_c2s(&sock, &C2S::GoodBye);
+            println!("Exiting...");
+            break;
+        }
 
         // --- send input (30Hz is enough)
         if last_send.elapsed().as_millis() >= 33 {
@@ -69,14 +78,15 @@ async fn main() {
                 as f32
                 * 0.06;
             let shoot = is_key_pressed(KeyCode::Space);
-            let pkt = to_stdvec(&C2S::Input {
-                fwd,
-                strafe,
-                turn,
-                shoot,
-            })
-            .unwrap();
-            let _ = sock.send(&pkt);
+            send_c2s(
+                &sock,
+                &C2S::Input {
+                    fwd,
+                    strafe,
+                    turn,
+                    shoot,
+                },
+            );
         }
 
         // --- render

@@ -74,6 +74,12 @@ fn main() -> std::io::Result<()> {
                             }
                         }
                     }
+                    C2S::GoodBye => {
+                        if let Some(id) = clients.remove(&addr) {
+                            players.remove(&id);
+                            println!("Client disconnected: id={}, addr={}", id, addr);
+                        }
+                    }
                 }
             }
         }
