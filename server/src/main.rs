@@ -25,6 +25,7 @@ fn main() -> std::io::Result<()> {
             if let Ok(msg) = from_bytes::<C2S>(&buf[..n]) {
                 match msg {
                     C2S::Hello { name } => {
+                        let is_new = !clients.contains_key(&addr);
                         let id = *clients.entry(addr).or_insert_with(|| {
                             let id = next_id;
                             next_id += 1;
@@ -41,6 +42,11 @@ fn main() -> std::io::Result<()> {
                             );
                             id
                         });
+                        if is_new {
+                            let name_str = String::from_utf8_lossy(&name);
+                            let name_str = name_str.trim_end_matches('\0');
+                            println!("Client connected: {} (id={}, addr={})", name_str, id, addr);
+                        }
                         let pkt = to_stdvec(&S2C::Welcome { id }).unwrap();
                         let _ = sock.send_to(&pkt, addr);
                     }
