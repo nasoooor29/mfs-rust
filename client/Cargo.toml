@@ -1,9 +1,0 @@
-[package]
-name = "client"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-common = { path = "../common" }
-postcard = { version = "1.0", features = ["alloc", "use-std"] }
-macroquad = "0.4"
