@@ -1,5 +1,11 @@
 #### Functional
 
+##### Inspect the project configuration and source code.
+
+###### Is Bevy used as the client game framework for rendering, input, UI, and the application loop?
+
+###### Does the server run without requiring a window or graphics device?
+
 ##### Try to run the game server
 
 ###### Does it compile and run without any warnings?
@@ -28,6 +34,16 @@
 
 ###### When you move around the maze, does the view of the camera update?
 
+###### Do `W`, `A`, `S`, and `D` move the player forward, left, backward, and right?
+
+###### Do the arrow keys control rotation, with left and right rotating counterclockwise and clockwise?
+
+###### Does Space shoot a projectile?
+
+###### Are movement and rotation speeds consistent at different frame rates?
+
+###### Are walls and floors rendered on a consistent 32 x 32 pixel tile grid, with players, projectiles, and pickups using the documented standard sprite sizes?
+
 ###### Is the frame rate displayed in the interface?
 
 ###### Is the frame rate of the game higher than 50 fps?
@@ -42,13 +58,26 @@
 
 ###### Independently of the frame rate displayed on the screen, does the game feel smooth?
 
+##### Restart the server several times with different map seeds and inspect each generated map.
+
+###### Is each playable map generated procedurally by the server, with its seed logged so the map can be reproduced?
+
+###### Does the game provide at least 3 generated difficulty levels with progressively more dead ends or longer routes?
+
+###### Is every player spawn on a walkable tile with at least two walkable neighboring tiles and enough clearance for the player collision bounds?
+
+###### Can every spawn reach every other spawn and required objective through walkable tiles?
+
+###### Are spawn points separated by the configured minimum path distance and protected from immediate direct firing lines?
+
+###### When generation validation is deliberately made to fail, does the server retry a bounded number of times and then use a known-valid fallback rather than starting an invalid map?
+
 #### Bonus
 
 ###### +Is it possible to edit your own maze?
 
-###### +Are levels created automatically by an algorithm?
+###### +Can generated levels be reproduced from a recorded seed?
 
 ###### +Can you play against an A.I. player?
 
 ###### +Does the game initialization include a history of hosts with aliases for easier reconnection?
-
