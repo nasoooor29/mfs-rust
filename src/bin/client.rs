@@ -287,13 +287,14 @@ fn setup(
             });
         }
     }
-    let (objective_x, objective_y) = maze.world_position(maze.objective);
-    commands.spawn(PbrBundle {
-        mesh: meshes.add(Cuboid::new(12.0, 30.0, 12.0)),
-        material: materials.add(Color::srgb(1.0, 0.62, 0.08)),
-        transform: Transform::from_xyz(objective_x, 15.0, objective_y),
-        ..default()
-    });
+    // NOTE: removing the orange guy
+    // let (objective_x, objective_y) = maze.world_position(maze.objective);
+    // commands.spawn(PbrBundle {
+    //     mesh: meshes.add(Cuboid::new(12.0, 30.0, 12.0)),
+    //     material: materials.add(Color::srgb(1.0, 0.62, 0.08)),
+    //     transform: Transform::from_xyz(objective_x, 15.0, objective_y),
+    //     ..default()
+    // });
 
     commands.insert_resource(SceneAssets {
         player_mesh: meshes.add(Cuboid::new(
