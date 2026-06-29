@@ -5,7 +5,7 @@ A small authoritative multiplayer maze game. The server generates and validates 
 ## Run
 
 ```bash
-cargo run --bin server -- 0.0.0.0:34254 medium
+cargo run --bin server -- addr=0.0.0.0:34254 difficulty=medium seed=12345 empty=1
 cargo run --bin client
 ```
 

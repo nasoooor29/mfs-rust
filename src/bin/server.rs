@@ -45,24 +45,39 @@ struct Projectile {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
+    // if any arg have prefix of bind_addr= parse it as the bind addr else default
     let bind_addr = args
-        .get(1)
-        .map(String::as_str)
+        .iter()
+        .find_map(|arg| arg.strip_prefix("bind_addr="))
         .unwrap_or(DEFAULT_SERVER_ADDR);
+    // if any arg have prefix of difficulty= parse it as the difficulty else default
     let difficulty = args
-        .get(2)
+        .iter()
+        .find_map(|arg| arg.strip_prefix("difficulty="))
         .and_then(|s| Difficulty::parse(s))
         .unwrap_or(Difficulty::Medium);
-    let seed = args.get(3).and_then(|s| s.parse().ok()).unwrap_or_else(|| {
-        SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_nanos() as u64
-    });
-    #[allow(unused_variables)]
-    let generated = generate(seed, difficulty, 8);
-    // NOTE: remove the next line to auto generate the maps.
-    let generated = empty(seed, difficulty);
+    // if any arg have prefix of seed= parse it as the seed else default
+    let seed = args
+        .iter()
+        .find_map(|arg| arg.strip_prefix("seed="))
+        .and_then(|s| s.parse::<u64>().ok())
+        .unwrap_or_else(|| {
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs()
+        });
+    // if any arg have empty=1 then generate empty maze else generate random maze
+    let is_empty = args.iter().any(|arg| arg == "empty=1");
+    let generated: maze_runner::maze::GeneratedMaze;
+    if is_empty {
+        println!("generating EMPTY maze");
+        generated = empty(seed, difficulty);
+    } else {
+        println!("generating RANDOM maze with seed={seed} difficulty={difficulty:?}");
+        generated = generate(seed, difficulty, 8);
+    }
+
     println!(
         "maze seed={} difficulty={difficulty:?} fallback={}",
         generated.effective_seed, generated.used_fallback
