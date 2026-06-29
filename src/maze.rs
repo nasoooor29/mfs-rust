@@ -112,6 +112,59 @@ pub fn generate(seed: u64, difficulty: Difficulty, max_retries: usize) -> Genera
     }
 }
 
+pub fn empty(seed: u64, difficulty: Difficulty) -> GeneratedMaze {
+    let (width, height, _, _) = difficulty.settings();
+    let spawns = [
+        TilePos { x: 2, y: 2 },
+        TilePos { x: width / 2, y: 2 },
+        TilePos { x: width - 3, y: 2 },
+        TilePos {
+            x: 2,
+            y: height / 2,
+        },
+        TilePos {
+            x: width - 3,
+            y: height / 2,
+        },
+        TilePos {
+            x: 2,
+            y: height - 3,
+        },
+        TilePos {
+            x: width / 2,
+            y: height - 3,
+        },
+        TilePos {
+            x: width - 3,
+            y: height - 3,
+        },
+        TilePos {
+            x: width / 3,
+            y: height / 2,
+        },
+        TilePos {
+            x: width * 2 / 3,
+            y: height / 2,
+        },
+    ]
+    .into();
+
+    GeneratedMaze {
+        maze: Maze {
+            width,
+            height,
+            tiles: vec![1; width * height],
+            spawns,
+            objective: TilePos {
+                x: width / 2,
+                y: height / 2,
+            },
+        },
+        effective_seed: seed,
+        used_fallback: false,
+    }
+}
+
 fn carve(seed: u64, difficulty: Difficulty) -> Maze {
     let (width, height, loop_chance, min_spawn_distance) = difficulty.settings();
     let mut rng = StdRng::seed_from_u64(seed);

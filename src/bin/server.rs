@@ -7,7 +7,7 @@ use std::{
 };
 
 use maze_runner::{
-    maze::{generate, Difficulty, Maze},
+    maze::{empty, generate, Difficulty, Maze},
     protocol::{
         decode, encode, ClientMessage, InputState, PlayerSnapshot, ProjectileSnapshot,
         ServerMessage, PROTOCOL_VERSION,
@@ -59,7 +59,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .unwrap_or_default()
             .as_nanos() as u64
     });
+    #[allow(unused_variables)]
     let generated = generate(seed, difficulty, 8);
+    // NOTE: remove the next line to auto generate the maps.
+    let generated = empty(seed, difficulty);
     println!(
         "maze seed={} difficulty={difficulty:?} fallback={}",
         generated.effective_seed, generated.used_fallback
