@@ -88,7 +88,9 @@ struct NetPlayer(u64);
 #[derive(Component)]
 struct NetProjectile(u64);
 #[derive(Component)]
-struct MiniMarker;
+struct MiniMapRoot;
+#[derive(Component)]
+struct MiniMarker(u64);
 #[derive(Component)]
 struct FpsText;
 #[derive(Component)]
@@ -226,6 +228,7 @@ fn connect(
 fn setup(
     mut commands: Commands,
     maze: Res<GameMaze>,
+    local: Res<LocalPlayer>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut window: Query<&mut Window, With<PrimaryWindow>>,
@@ -371,19 +374,22 @@ fn setup(
 
     let cell = 3.0;
     commands
-        .spawn(NodeBundle {
-            style: Style {
-                position_type: PositionType::Absolute,
-                right: Val::Px(12.0),
-                top: Val::Px(12.0),
-                width: Val::Px(maze.width as f32 * cell),
-                height: Val::Px(maze.height as f32 * cell),
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    position_type: PositionType::Absolute,
+                    right: Val::Px(12.0),
+                    top: Val::Px(12.0),
+                    width: Val::Px(maze.width as f32 * cell),
+                    height: Val::Px(maze.height as f32 * cell),
+                    ..default()
+                },
+                background_color: Color::BLACK.into(),
+                z_index: ZIndex::Global(10),
                 ..default()
             },
-            background_color: Color::BLACK.into(),
-            z_index: ZIndex::Global(10),
-            ..default()
-        })
+            MiniMapRoot,
+        ))
         .with_children(|root| {
             for y in 0..maze.height {
                 for x in 0..maze.width {
@@ -418,7 +424,7 @@ fn setup(
                     z_index: ZIndex::Local(2),
                     ..default()
                 },
-                MiniMarker,
+                MiniMarker(local.0),
             ));
         });
 }
@@ -502,6 +508,8 @@ fn receive_snapshots(
     assets: Res<SceneAssets>,
     mut players: Query<(Entity, &NetPlayer, &mut Transform)>,
     projectiles: Query<(Entity, &NetProjectile)>,
+    minimap_root: Query<Entity, With<MiniMapRoot>>,
+    minimap_markers: Query<(Entity, &MiniMarker)>,
     mut score_text: Query<&mut Text, With<ScoreText>>,
 ) {
     let mut latest = None;
@@ -525,6 +533,40 @@ fn receive_snapshots(
     for (entity, player, _) in &mut players {
         if !player_ids.contains(&player.0) {
             commands.entity(entity).despawn();
+        }
+    }
+    for (entity, marker) in &minimap_markers {
+        if !player_ids.contains(&marker.0) {
+            commands.entity(entity).despawn();
+        }
+    }
+    let existing_markers: HashSet<_> = minimap_markers.iter().map(|(_, marker)| marker.0).collect();
+    if let Ok(root) = minimap_root.get_single() {
+        for snapshot in &snapshots {
+            if existing_markers.contains(&snapshot.id) {
+                continue;
+            }
+            let (size, color) = if snapshot.id == local.0 {
+                (5.0, Color::srgb(1.0, 0.25, 0.2))
+            } else {
+                (4.0, Color::srgb(0.35, 0.75, 1.0))
+            };
+            commands.entity(root).with_children(|root| {
+                root.spawn((
+                    NodeBundle {
+                        style: Style {
+                            position_type: PositionType::Absolute,
+                            width: Val::Px(size),
+                            height: Val::Px(size),
+                            ..default()
+                        },
+                        background_color: color.into(),
+                        z_index: ZIndex::Local(2),
+                        ..default()
+                    },
+                    MiniMarker(snapshot.id),
+                ));
+            });
         }
     }
     for snapshot in &snapshots {
@@ -629,20 +671,18 @@ fn follow_player(
 
 fn update_minimap(
     maze: Res<GameMaze>,
-    local: Res<LocalPlayer>,
     players: Query<(&NetPlayer, &Transform)>,
-    mut marker: Query<&mut Style, With<MiniMarker>>,
+    mut markers: Query<(&MiniMarker, &mut Style)>,
 ) {
-    let Some((_, transform)) = players.iter().find(|(player, _)| player.0 == local.0) else {
-        return;
-    };
-    let Ok(mut style) = marker.get_single_mut() else {
-        return;
-    };
-    let tile_x = transform.translation.x / TILE_SIZE + maze.width as f32 / 2.0;
-    let tile_y = transform.translation.z / TILE_SIZE + maze.height as f32 / 2.0;
-    style.left = Val::Px(tile_x * 3.0 - 1.0);
-    style.top = Val::Px((maze.height as f32 - tile_y) * 3.0 - 1.0);
+    for (marker, mut style) in &mut markers {
+        let Some((_, transform)) = players.iter().find(|(player, _)| player.0 == marker.0) else {
+            continue;
+        };
+        let tile_x = transform.translation.x / TILE_SIZE + maze.width as f32 / 2.0;
+        let tile_y = transform.translation.z / TILE_SIZE + maze.height as f32 / 2.0;
+        style.left = Val::Px(tile_x * 3.0 - 1.0);
+        style.top = Val::Px((maze.height as f32 - tile_y) * 3.0 - 1.0);
+    }
 }
 
 fn update_ui(diagnostics: Res<DiagnosticsStore>, mut text: Query<&mut Text, With<FpsText>>) {
