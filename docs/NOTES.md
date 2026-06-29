@@ -5,3 +5,15 @@
 - add empty map flag
 - WHO IS THE THIRD GUY?
 
+
+
+- what is the game loop?
+- Spawn
+- Explore the maze
+- Listen/look for enemies
+- Peek around corners
+- Spot another player
+- Shoot or get shot
+- Score changes
+- Respawn
+- Repeat
