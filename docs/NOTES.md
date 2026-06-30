@@ -4,6 +4,7 @@
 - [ ] add sprites
 - [x] add empty map flag
 - [x] WHO IS THE THIRD GUY? (removed it and added a NOTE: it's just an empty object)
+- [ ] you can only kill a guy once
 
 
 
