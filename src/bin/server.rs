@@ -20,6 +20,7 @@ const PLAYER_SPEED: f32 = 150.0;
 const TURN_SPEED: f32 = 2.8;
 const PROJECTILE_SPEED: f32 = 360.0;
 const MAX_CLIENTS: usize = 64;
+const RESPAWN_TIME: f32 = 0.9;
 
 struct Player {
     id: u64,
@@ -30,6 +31,7 @@ struct Player {
     input: InputState,
     last_seen: Instant,
     shoot_cooldown: f32,
+    respawn_timer: f32,
     score: u32,
 }
 
@@ -116,9 +118,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         );
                     } else {
                         let player = players.entry(address).or_insert_with(|| {
-                            let spawn = generated.maze.spawns
-                                [(next_id as usize - 1) % generated.maze.spawns.len()];
-                            let (x, y) = generated.maze.world_position(spawn);
+                            let (x, y) = spawn_position(&generated.maze, next_id);
                             let player = Player {
                                 id: next_id,
                                 username: clean_name(&username),
@@ -128,6 +128,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 input: InputState::default(),
                                 last_seen: Instant::now(),
                                 shoot_cooldown: 0.0,
+                                respawn_timer: 0.0,
                                 score: 0,
                             };
                             next_id += 1;
@@ -199,6 +200,15 @@ fn update_players(
 ) {
     let dt = 1.0 / TICK_RATE;
     for player in players.values_mut() {
+        if player.respawn_timer > 0.0 {
+            player.respawn_timer = (player.respawn_timer - dt).max(0.0);
+            if player.respawn_timer == 0.0 {
+                (player.x, player.y) = respawn_position(maze, player.id);
+                player.shoot_cooldown = 0.0;
+            }
+            continue;
+        }
+
         player.angle += player.input.turn.clamp(-1.0, 1.0) * TURN_SPEED * dt;
         let (sin, cos) = player.angle.sin_cos();
         let forward = player.input.forward.clamp(-1.0, 1.0);
@@ -246,13 +256,16 @@ fn update_projectiles(
         if let Some(victim_id) = players
             .values()
             .find(|p| {
-                p.id != projectile.owner && (p.x - projectile.x).hypot(p.y - projectile.y) < 14.0
+                p.respawn_timer == 0.0
+                    && p.id != projectile.owner
+                    && (p.x - projectile.x).hypot(p.y - projectile.y) < 14.0
             })
             .map(|p| p.id)
         {
             if let Some(victim) = players.values_mut().find(|p| p.id == victim_id) {
-                let spawn = maze.spawns[victim.id as usize % maze.spawns.len()];
-                (victim.x, victim.y) = maze.world_position(spawn);
+                victim.respawn_timer = RESPAWN_TIME;
+                victim.shoot_cooldown = 0.0;
+                (victim.x, victim.y) = respawn_position(maze, victim.id);
             }
             if let Some(owner) = players.values_mut().find(|p| p.id == projectile.owner) {
                 owner.score += 1;
@@ -273,6 +286,7 @@ fn broadcast_snapshot(
         tick,
         players: players
             .values()
+            .filter(|p| p.respawn_timer == 0.0)
             .map(|p| PlayerSnapshot {
                 id: p.id,
                 username: p.username.clone(),
@@ -296,6 +310,16 @@ fn broadcast_snapshot(
             let _ = socket.send_to(&bytes, address);
         }
     }
+}
+
+fn spawn_position(maze: &Maze, player_id: u64) -> (f32, f32) {
+    let spawn = maze.spawns[(player_id as usize - 1) % maze.spawns.len()];
+    maze.world_position(spawn)
+}
+
+fn respawn_position(maze: &Maze, player_id: u64) -> (f32, f32) {
+    let spawn = maze.spawns[player_id as usize % maze.spawns.len()];
+    maze.world_position(spawn)
 }
 
 fn send(socket: &UdpSocket, address: SocketAddr, message: &ServerMessage) {
