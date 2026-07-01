@@ -51,8 +51,12 @@ pub fn receive_snapshots(
             commands.entity(entity).despawn();
         }
     }
+    let minimap_root = queries.minimap_root.get_single().ok();
     for (entity, marker) in &queries.minimap_markers {
         if !player_ids.contains(&marker.0) {
+            if let Some(root) = minimap_root {
+                commands.entity(root).remove_children(&[entity]);
+            }
             commands.entity(entity).despawn();
         }
     }
@@ -61,7 +65,7 @@ pub fn receive_snapshots(
         .iter()
         .map(|(_, marker)| marker.0)
         .collect();
-    if let Ok(root) = queries.minimap_root.get_single() {
+    if let Some(root) = minimap_root {
         for snapshot in &snapshots {
             if existing_markers.contains(&snapshot.id) {
                 continue;
