@@ -33,9 +33,9 @@ pub fn spawn_minimap(commands: &mut Commands, maze: &GameMaze, local: &LocalPlay
             for y in 0..maze.height {
                 for x in 0..maze.width {
                     let color = if maze.tiles[y * maze.width + x] == 1 {
-                        Color::srgb(0.28, 0.31, 0.33)
-                    } else {
                         Color::srgb(0.05, 0.07, 0.08)
+                    } else {
+                        Color::srgb(0.28, 0.31, 0.33)
                     };
                     root.spawn(NodeBundle {
                         style: Style {
