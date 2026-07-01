@@ -3,7 +3,7 @@ use std::{net::SocketAddr, sync::Mutex};
 use bevy::{
     diagnostic::FrameTimeDiagnosticsPlugin,
     prelude::*,
-    window::{PresentMode, WindowResolution},
+    window::WindowResolution,
 };
 use maze_runner::{protocol::ServerMessage, DEFAULT_SERVER_ADDR};
 
@@ -54,7 +54,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     primary_window: Some(Window {
                         title: "Maze Runner".into(),
                         resolution: WindowResolution::new(1280.0, 720.0),
-                        present_mode: PresentMode::AutoVsync,
+                        // present_mode: PresentMode::AutoVsync,
                         ..default()
                     }),
                     ..default()
