@@ -7,7 +7,7 @@ use std::{
 };
 
 use maze_runner::{
-    maze::{empty, generate, Difficulty, Maze},
+    maze::{empty, generate, Difficulty, GeneratedMaze, Maze},
     protocol::{
         decode, encode, ClientMessage, InputState, PlayerSnapshot, ProjectileSnapshot,
         ServerMessage, PROTOCOL_VERSION,
@@ -47,18 +47,15 @@ struct Projectile {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
-    // if any arg have prefix of bind_addr= parse it as the bind addr else default
     let bind_addr = args
         .iter()
         .find_map(|arg| arg.strip_prefix("bind_addr="))
         .unwrap_or(DEFAULT_SERVER_ADDR);
-    // if any arg have prefix of difficulty= parse it as the difficulty else default
     let difficulty = args
         .iter()
         .find_map(|arg| arg.strip_prefix("difficulty="))
-        .and_then(|s| Difficulty::parse(s))
+        .and_then(Difficulty::parse)
         .unwrap_or(Difficulty::Medium);
-    // if any arg have prefix of seed= parse it as the seed else default
     let seed = args
         .iter()
         .find_map(|arg| arg.strip_prefix("seed="))
@@ -69,16 +66,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .unwrap()
                 .as_secs()
         });
-    // if any arg have empty=1 then generate empty maze else generate random maze
     let is_empty = args.iter().any(|arg| arg == "empty=1");
-    let generated: maze_runner::maze::GeneratedMaze;
-    if is_empty {
+    let generated: GeneratedMaze = if is_empty {
         println!("generating EMPTY maze");
-        generated = empty(seed, difficulty);
+        empty(seed, difficulty)
     } else {
         println!("generating RANDOM maze with seed={seed} difficulty={difficulty:?}");
-        generated = generate(seed, difficulty, 8);
-    }
+        generate(seed, difficulty, 8)
+    };
 
     println!(
         "maze seed={} difficulty={difficulty:?} fallback={}",

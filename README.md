@@ -5,8 +5,8 @@ A small authoritative multiplayer maze game. The server generates and validates 
 ## Run
 
 ```bash
-cargo run --bin server -- addr=0.0.0.0:34254 difficulty=medium seed=12345 empty=1
-cargo run --bin client
+cargo run -p server -- bind_addr=0.0.0.0:34254 difficulty=medium seed=12345 empty=1
+cargo run -p client
 ```
 
 The optional server arguments are `[bind-address] [easy|medium|hard] [seed]`. The server binds all interfaces in the example, so other machines can connect using the host's LAN address. Start additional clients to play locally.

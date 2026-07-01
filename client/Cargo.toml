@@ -1,0 +1,8 @@
+[package]
+name = "client"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = { version = "0.14.2", features = ["wayland"] }
+maze_runner = { package = "lib", path = "../lib" }
